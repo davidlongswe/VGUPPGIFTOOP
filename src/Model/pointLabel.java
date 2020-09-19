@@ -14,10 +14,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class SmallInfoLabel extends Label {
+public class pointLabel extends Label {
     private final static String FONT_PATH = "src/Model/resources/kenvector_future.ttf";
 
-    public SmallInfoLabel(String text){
+    public pointLabel(String text){
         setPrefWidth(130);
         setPrefHeight(50);
         BackgroundImage backgroundImage = new BackgroundImage(
@@ -39,7 +39,6 @@ public class SmallInfoLabel extends Label {
         } catch (FileNotFoundException e) {
             setFont(Font.font("Verdana", 15));
         }
-
     }
 
 
