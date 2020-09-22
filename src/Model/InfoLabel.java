@@ -37,7 +37,6 @@ public class InfoLabel extends Label {
         } catch (FileNotFoundException e) {
             setFont(Font.font("Verdana", 23));
         }
-
     }
 
 }

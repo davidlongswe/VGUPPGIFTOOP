@@ -1,5 +1,6 @@
 package Model;
 
+import Model.entities.players.TANK;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

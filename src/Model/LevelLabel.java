@@ -14,16 +14,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-public class pointLabel extends Label {
+public class LevelLabel extends Label {
     private final static String FONT_PATH = "src/Model/resources/kenvector_future.ttf";
+    public static final String BACKGROUND_PATH = "View/resources/blue_button13.png";
 
-    public pointLabel(String text){
-        setPrefWidth(130);
+    public LevelLabel(String text){
+        setPrefWidth(170);
         setPrefHeight(50);
         BackgroundImage backgroundImage = new BackgroundImage(
                 new Image(
-                        "View/resources/blue_button13.png",
-                        130, 50,
+                        BACKGROUND_PATH,
+                        170, 50,
                         false, true), BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, null);
         setBackground(new Background(backgroundImage));
@@ -40,6 +41,4 @@ public class pointLabel extends Label {
             setFont(Font.font("Verdana", 15));
         }
     }
-
-
 }

@@ -1,4 +1,4 @@
-package Model;
+package Model.entities.players;
 
 public enum TANK {
     DARK("View/resources/tanks/tank_dark_rotated.png"),
@@ -6,7 +6,6 @@ public enum TANK {
     SAND("View/resources/tanks/tank_sand_rotated.png");
 
     private String urlTank;
-    private String urlLife;
 
     TANK(String urlTank){
         this.urlTank = urlTank;
@@ -14,10 +13,6 @@ public enum TANK {
 
     public String getUrlTank() {
         return urlTank;
-    }
-
-    public String getUrlLife(){
-        return urlLife;
     }
 
 }

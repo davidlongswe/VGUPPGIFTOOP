@@ -1,8 +1,9 @@
 package View;
 
-import Model.Bullet;
-import Model.pointLabel;
-import Model.TANK;
+import Model.PointLabel;
+import Model.entities.enemies.*;
+import Model.entities.players.TANK;
+import Model.entities.projectiles.Bullet;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
@@ -21,55 +22,48 @@ public class GameViewManager {
     private AnchorPane gamePane;
     private Stage gameStage;
     private Scene gameScene;
+    private Stage menuStage;
 
     public static final int GAME_WIDTH = 1024;
     public static final int GAME_HEIGHT = 768;
-
-    private Stage menuStage;
-    private ImageView tank;
+    public static final int TANK_RADIUS = 21;
+    public static final int HEART_RADIUS = 16;
+    public static final int TANK_HEIGHT = 46;
+    public static final int HEART_DIAMETER = 32;
+    public static final int TANK_WIDTH = 42;
 
     boolean shooting,
-            thinShotFired,
-            largeShotFired,
             isLeftKeyPressed,
             isRightKeyPressed,
             isUpKeyPressed,
             isDownKeyPressed;
 
     private int angle;
+    private int level;
     private AnimationTimer gameTimer;
 
     private GridPane gridPane1;
     private GridPane gridPane2;
+
     public static final String BACKGROUND_IMAGE = "View/resources/bg.png";
-
-    public final static String ENEMY_TANK_BLUE = "View/resources/tanks/tank_blue.png";
-    public final static String ENEMY_BIG_RED = "View/resources/tanks/tank_bigRed.png";
-    public final static String ENEMY_HUGE = "View/resources/tanks/tank_huge.png";
-    public static final String ENEMY_GREEN = "View/resources/tanks/tank_green.png";
-
-    private ImageView[] blueEnemyTanks;
-    private ImageView[] bigRedEnemyTanks;
-    private ImageView[] hugeEnemyTanks;
-    private ImageView[] greenEnemyTanks;
-    private ArrayList<Bullet> thinBullets;
-    private ArrayList<Bullet> largeBullets;
-    private Random randomNumberGenerator;
-
-    private ImageView heart;
-    private pointLabel pointsLabel;
-    private ArrayList<ImageView> playerLives;
-    private int livesLeft;
-    private int points;
     public static final String HEART_IMAGE = "View/resources/heart.png";
     public static final String EXPLOSION = "View/resources/explosionSmoke2.png";
     public static final String BULLET_THIN = "View/resources/shotThin.png";
-    public static final int TANK_RADIUS = 21;
-    public static final int HEART_RADIUS = 16;
-    public static final int TANK_HEIGHT = 46;
-    public static final int HEART_HEIGHT = 32;
-    public static final int TANK_WIDTH = 42;
-    public static final int HEART_WIDTH = 32;
+    public static final String SMOKE = "View/resources/explosionSmoke4.png";
+
+    private ArrayList<Enemy> enemies;
+    private ArrayList<Bullet> thinBullets;
+    private ArrayList<ImageView> playerLives;
+
+    private Random randomNumberGenerator;
+
+    private ImageView tank;
+    private ImageView heart;
+
+    private PointLabel pointsLabel;
+
+    private int livesLeft;
+    private int points;
 
     public GameViewManager(){
         initializeStage();
@@ -95,8 +89,6 @@ public class GameViewManager {
             if(keyCode == KeyCode.SPACE){
                 if(!shooting){
                     addBullet();
-                    System.out.println("thin bullet added, there are " + thinBullets.size() + " bullets in the list");
-                    thinShotFired = true;
                     shooting = true;
                 }
             }
@@ -115,12 +107,7 @@ public class GameViewManager {
                 isDownKeyPressed = false;
             }
             if(event.getCode() == KeyCode.SPACE){
-                thinShotFired = false;
                 shooting = false;
-            }
-            if(event.getCode() == KeyCode.SHIFT){
-                largeShotFired = false;
-                shooting = true;
             }
         });
     }
@@ -144,7 +131,7 @@ public class GameViewManager {
         this.menuStage = menuStage;
         this.menuStage.hide();
         thinBullets = new ArrayList<>();
-        largeBullets = new ArrayList<>();
+        level = 1;
         createBackground();
         createTank(chosenTank);
         createGameElements();
@@ -154,37 +141,89 @@ public class GameViewManager {
 
     private void createGameElements(){
         addPlayerInfo();
-        setNewElementPosition(heart);
+        addHeart();
+        switch(level){
+            case 1:
+                enemies = new ArrayList<>();
+                addEnemies(enemies, "BLUE",  3);
+                addEnemies(enemies,  "RED", 2);
+                addEnemies(enemies, "HUGE", 1);
+                addEnemies(enemies,  "GREEN", 2);
+                addEnemiesToGamePane();
+                break;
+            case 2:
+                enemies.clear();
+                addEnemies(enemies, "GREEN",  10);
+                addEnemiesToGamePane();
+                break;
+            case 3:
+                enemies.clear();
+                addEnemies(enemies, "HUGE",  15);
+                addEnemiesToGamePane();
+                break;
+            case 4:
+                enemies.clear();
+                addEnemies(enemies, "BLUE",  3);
+                addEnemies(enemies,  "RED", 3);
+                addEnemies(enemies, "HUGE", 5);
+                addEnemies(enemies,  "GREEN", 3);
+                addEnemiesToGamePane();
+                break;
+            case 5:
+                enemies.clear();
+                addEnemies(enemies, "BLUE",  10);
+                addEnemies(enemies,  "RED", 10);
+                addEnemies(enemies, "HUGE", 10);
+                addEnemiesToGamePane();
+                break;
+        }
+    }
 
-        blueEnemyTanks = new ImageView[3];
-        bigRedEnemyTanks = new ImageView[2];
-        hugeEnemyTanks = new ImageView[1];
-        greenEnemyTanks = new ImageView[3];
-
-        addEnemies(blueEnemyTanks, ENEMY_TANK_BLUE);
-        addEnemies(bigRedEnemyTanks, ENEMY_BIG_RED);
-        addEnemies(hugeEnemyTanks, ENEMY_HUGE);
-        addEnemies(greenEnemyTanks, ENEMY_GREEN);
+    private void addEnemiesToGamePane() {
+        for(Enemy enemy : enemies){
+            gamePane.getChildren().add(enemy.getEnemyTankImage());
+        }
     }
 
     private void addPlayerInfo(){
         livesLeft = 3;
+        playerLives = new ArrayList<>();
+        updateLives(livesLeft);
+        setUpPointsLabel();
+    }
+
+    private void addHeart(){
         heart = new ImageView(HEART_IMAGE);
         setNewElementPosition(heart);
         gamePane.getChildren().add(heart);
-        pointsLabel = new pointLabel("POINTS : 00");
-        pointsLabel.setLayoutX(GAME_WIDTH - 160);
-        pointsLabel.setLayoutY(20);
-        gamePane.getChildren().add(pointsLabel);
-        playerLives = new ArrayList<>();
-        updateLives(livesLeft);
     }
 
-    private void addEnemies(ImageView[] enemies, String path){
-        for(int i = 0; i < enemies.length; i++){
-            enemies[i] = new ImageView(path);
-            setNewElementPosition(enemies[i]);
-            gamePane.getChildren().add(enemies[i]);
+    private void setUpPointsLabel(){
+        pointsLabel = new PointLabel("POINTS : 00");
+        pointsLabel.setLayoutX(GAME_WIDTH - 210);
+        pointsLabel.setLayoutY(20);
+        gamePane.getChildren().add(pointsLabel);
+    }
+
+    private void addEnemies(ArrayList<Enemy> enemies, String type, int amountOfEnemies){
+        int startIndex = enemies.size();
+        int endIndex = enemies.size() + amountOfEnemies;
+        for (int i = startIndex; i < endIndex; i++) {
+            switch(type){
+                case "BLUE":
+                    enemies.add(new BlueEnemy());
+                    break;
+                case "RED":
+                    enemies.add(new BigRedEnemy());
+                    break;
+                case "HUGE":
+                    enemies.add(new HugeEnemy());
+                    break;
+                case "GREEN":
+                    enemies.add(new GreenEnemy());
+                    break;
+            }
+            enemies.get(i).setNewStartPosition();
         }
     }
 
@@ -195,17 +234,8 @@ public class GameViewManager {
             thinBullet.getBulletImage().setLayoutY(thinBullet.getBulletImage().getLayoutY() - 10);
         }
 
-        for (ImageView blueEnemyTank : blueEnemyTanks) {
-            blueEnemyTank.setLayoutY(blueEnemyTank.getLayoutY() + 1);
-        }
-        for (ImageView bigRedEnemyTank : bigRedEnemyTanks) {
-            bigRedEnemyTank.setLayoutY(bigRedEnemyTank.getLayoutY() + 1);
-        }
-        for (ImageView hugeEnemyTank : hugeEnemyTanks) {
-            hugeEnemyTank.setLayoutY(hugeEnemyTank.getLayoutY() + 1);
-        }
-        for (ImageView greenEnemyTank : greenEnemyTanks) {
-            greenEnemyTank.setLayoutY(greenEnemyTank.getLayoutY() + 1);
+        for(Enemy enemy : enemies){
+            enemy.move();
         }
     }
 
@@ -213,26 +243,8 @@ public class GameViewManager {
         if(heart.getLayoutY() > GAME_HEIGHT){
             heart.setLayoutY(0);
         }
-
-        for (ImageView blueEnemyTank : blueEnemyTanks) {
-            if(blueEnemyTank.getLayoutY() > GAME_HEIGHT){
-                blueEnemyTank.setLayoutY(0);
-            }
-        }
-        for (ImageView bigRedEnemyTank : bigRedEnemyTanks) {
-            if(bigRedEnemyTank.getLayoutY() > GAME_HEIGHT){
-                bigRedEnemyTank.setLayoutY(0);
-            }
-        }
-        for (ImageView hugeEnemyTank : hugeEnemyTanks) {
-            if(hugeEnemyTank.getLayoutY() > GAME_HEIGHT){
-                hugeEnemyTank.setLayoutY(0);
-            }
-        }
-        for (ImageView greenEnemyTank : greenEnemyTanks) {
-            if(greenEnemyTank.getLayoutY() > GAME_HEIGHT){
-                greenEnemyTank.setLayoutY(0);
-            }
+        for(Enemy enemy : enemies){
+            enemy.resetPosition();
         }
     }
 
@@ -334,16 +346,13 @@ public class GameViewManager {
 
     private void checkCollisions(){
         checkCollisionWithHeart();
-        checkCollisionWithEnemies(blueEnemyTanks);
-        checkCollisionWithEnemies(greenEnemyTanks);
-        checkCollisionWithEnemies(hugeEnemyTanks);
-        checkCollisionWithEnemies(bigRedEnemyTanks);
+        checkCollisionWithEnemies();
     }
 
     private void checkCollisionWithHeart(){
         if(TANK_RADIUS+HEART_RADIUS > calculateDistance(
-                tank.getLayoutX() + TANK_WIDTH, heart.getLayoutX() + HEART_WIDTH,
-                tank.getLayoutY() + TANK_HEIGHT, heart.getLayoutY()+ HEART_HEIGHT)){
+                tank.getLayoutX() + TANK_WIDTH, heart.getLayoutX() + HEART_DIAMETER,
+                tank.getLayoutY() + TANK_HEIGHT, heart.getLayoutY()+ HEART_DIAMETER)){
             if(playerLives.size() <= 3 && playerLives.size() > 0){
                 livesLeft++;
                 updateLives(livesLeft);
@@ -352,20 +361,47 @@ public class GameViewManager {
         }
     }
 
-    private void checkCollisionWithBullets(ImageView enemyTank) {
+    private boolean collisionWithBullets(Enemy enemyTank) {
         for(Bullet bullet : thinBullets) {
-            if (TANK_WIDTH > calculateDistance(
-                    enemyTank.getLayoutX() + TANK_WIDTH, bullet.getBulletImage().getLayoutX() + 8,
-                    enemyTank.getLayoutY() + TANK_HEIGHT, bullet.getBulletImage().getLayoutY() + 26)) {
-                explode(enemyTank.getLayoutX(), enemyTank.getLayoutY());
+            if (TANK_RADIUS+4 > calculateDistance(
+                    enemyTank.getEnemyTankImage().getLayoutX() + TANK_WIDTH, bullet.getBulletImage().getLayoutX() + 8,
+                    enemyTank.getEnemyTankImage().getLayoutY() + TANK_HEIGHT, bullet.getBulletImage().getLayoutY() + 26)) {
+                collisionEffect(EXPLOSION, enemyTank.getEnemyTankImage().getLayoutX(), enemyTank.getEnemyTankImage().getLayoutY());
                 gamePane.getChildren().remove(bullet.getBulletImage());
-                gamePane.getChildren().remove(enemyTank);
+                gamePane.getChildren().remove(enemyTank.getEnemyTankImage());
+                enemies.remove(enemyTank);
+                if(canGoToNextLevel()){
+                    createGameElements();
+                }
+                thinBullets.remove(bullet);
+                increasePoints(enemyTank);
+                return true;
             }
+        }
+        return false;
+    }
+
+    private void increasePoints(Enemy enemyTank) {
+        if(enemyTank instanceof HugeEnemy){
+            addPoints(100);
+        }
+        if(enemyTank instanceof BigRedEnemy){
+            addPoints(75);
+        }
+        if(enemyTank instanceof GreenEnemy || enemyTank instanceof BlueEnemy){
+            addPoints(50);
         }
     }
 
-    private void explode(double layoutX, double layoutY) {
-        ImageView explosion = new ImageView(EXPLOSION);
+    private void addPoints(int pointAmount) {
+        points += pointAmount;
+        for (int j = 0; j <= pointAmount ; j++) {
+            pointsLabel.setText("POINTS: " + (points+j));
+        }
+    }
+
+    private void collisionEffect(String effectImageUrl, double layoutX, double layoutY) {
+        ImageView explosion = new ImageView(effectImageUrl);
         explosion.setLayoutX(layoutX);
         explosion.setLayoutY(layoutY);
         gamePane.getChildren().add(explosion);
@@ -374,16 +410,19 @@ public class GameViewManager {
         pause.play();    
     }
 
-    private void checkCollisionWithEnemies(ImageView[] tanks) {
-        for(ImageView enemyTank : tanks){
+    private void checkCollisionWithEnemies() {
+        for(Enemy enemy : enemies){
             if(TANK_WIDTH > calculateDistance(
-                    tank.getLayoutX() + TANK_WIDTH, enemyTank.getLayoutX() + TANK_WIDTH,
-                    tank.getLayoutY() + TANK_HEIGHT, enemyTank.getLayoutY() + TANK_HEIGHT)){
+                    tank.getLayoutX() + TANK_WIDTH, enemy.getEnemyTankImage().getLayoutX() + TANK_WIDTH,
+                    tank.getLayoutY() + TANK_HEIGHT, enemy.getEnemyTankImage().getLayoutY() + TANK_HEIGHT)){
                 removeLife();
                 updateLives(livesLeft);
-                setNewElementPosition(enemyTank);
+                collisionEffect(SMOKE, tank.getLayoutX(), tank.getLayoutY());
+                enemy.setNewStartPosition();
             }
-            checkCollisionWithBullets(enemyTank);
+            if(collisionWithBullets(enemy)){
+                break;
+            }
         }
     }
 
@@ -392,9 +431,13 @@ public class GameViewManager {
         gamePane.getChildren().remove(playerLives.get(indexToRemove));
         livesLeft--;
         if(livesLeft == 0){
-            gameStage.close();
-            gameTimer.stop();
+            endGame();
         }
+    }
+
+    private void endGame(){
+        gameStage.close();
+        gameTimer.stop();
     }
 
     private void updateLives(int livesLeft){
@@ -412,6 +455,15 @@ public class GameViewManager {
 
     private double calculateDistance(double x1, double x2, double y1, double y2){
         return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
+    }
+
+    private boolean canGoToNextLevel(){
+        if(enemies.isEmpty()){
+            level++;
+            gamePane.getChildren().remove(heart);
+            return true;
+        }
+        return false;
     }
 
 }

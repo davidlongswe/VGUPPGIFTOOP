@@ -1,4 +1,4 @@
-package Model;
+package Model.entities.projectiles;
 
 import javafx.scene.image.ImageView;
 
@@ -18,23 +18,12 @@ public class Bullet {
         return bulletImage;
     }
 
-    public void setBulletImage(ImageView bulletImage) {
-        this.bulletImage = bulletImage;
-    }
-
     public double getPosX() {
         return posX;
-    }
-
-    public void setPosX(double posX) {
-        this.posX = posX;
     }
 
     public double getPosY() {
         return posY;
     }
 
-    public void setPosY(double posY) {
-        this.posY = posY;
-    }
 }
