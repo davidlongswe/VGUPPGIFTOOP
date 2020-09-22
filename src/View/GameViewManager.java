@@ -1,5 +1,6 @@
 package View;
 
+import Model.LevelLabel;
 import Model.PointLabel;
 import Model.entities.enemies.*;
 import Model.entities.players.TANK;
@@ -61,6 +62,7 @@ public class GameViewManager {
     private ImageView heart;
 
     private PointLabel pointsLabel;
+    private LevelLabel levelLabel;
 
     private int livesLeft;
     private int points;
@@ -131,52 +133,29 @@ public class GameViewManager {
         this.menuStage = menuStage;
         this.menuStage.hide();
         thinBullets = new ArrayList<>();
+        enemies = new ArrayList<>();
         level = 1;
         createBackground();
         createTank(chosenTank);
+        addPlayerInfo();
+        setUpLevelLabel();
         createGameElements();
         createGameLoop();
         gameStage.show();
     }
 
     private void createGameElements(){
-        addPlayerInfo();
         addHeart();
-        switch(level){
-            case 1:
-                enemies = new ArrayList<>();
-                addEnemies(enemies, "BLUE",  3);
-                addEnemies(enemies,  "RED", 2);
-                addEnemies(enemies, "HUGE", 1);
-                addEnemies(enemies,  "GREEN", 2);
-                addEnemiesToGamePane();
-                break;
-            case 2:
-                enemies.clear();
-                addEnemies(enemies, "GREEN",  10);
-                addEnemiesToGamePane();
-                break;
-            case 3:
-                enemies.clear();
-                addEnemies(enemies, "HUGE",  15);
-                addEnemiesToGamePane();
-                break;
-            case 4:
-                enemies.clear();
-                addEnemies(enemies, "BLUE",  3);
-                addEnemies(enemies,  "RED", 3);
-                addEnemies(enemies, "HUGE", 5);
-                addEnemies(enemies,  "GREEN", 3);
-                addEnemiesToGamePane();
-                break;
-            case 5:
-                enemies.clear();
-                addEnemies(enemies, "BLUE",  10);
-                addEnemies(enemies,  "RED", 10);
-                addEnemies(enemies, "HUGE", 10);
-                addEnemiesToGamePane();
-                break;
-        }
+        generateNextLevel(level);
+    }
+
+    private void generateNextLevel(int level){
+        enemies.clear();
+        addEnemies(enemies, "GREEN", level);
+        addEnemies(enemies, "BLUE",  level);
+        addEnemies(enemies,  "RED", level);
+        addEnemies(enemies, "HUGE", level);
+        addEnemiesToGamePane();
     }
 
     private void addEnemiesToGamePane() {
@@ -198,9 +177,16 @@ public class GameViewManager {
         gamePane.getChildren().add(heart);
     }
 
+    private void setUpLevelLabel(){
+        levelLabel = new LevelLabel("LEVEL: " + level);
+        levelLabel.setLayoutX(20);
+        levelLabel.setLayoutY(20);
+        gamePane.getChildren().add(levelLabel);
+    }
+
     private void setUpPointsLabel(){
-        pointsLabel = new PointLabel("POINTS : 00");
-        pointsLabel.setLayoutX(GAME_WIDTH - 210);
+        pointsLabel = new PointLabel("POINTS: 00");
+        pointsLabel.setLayoutX(GAME_WIDTH - 250);
         pointsLabel.setLayoutY(20);
         gamePane.getChildren().add(pointsLabel);
     }
@@ -276,21 +262,15 @@ public class GameViewManager {
 
     private void moveTank(){
         if(isLeftKeyPressed && !isRightKeyPressed){
-            if(angle > -30){
-                angle -= 90;
-            }
-            tank.setRotate(angle);
-            if(tank.getLayoutX() > 0){
-                tank.setLayoutX(tank.getLayoutX() - 3);
+            tank.setRotate(-90);
+            if(tank.getLayoutX() > 5){
+                tank.setLayoutX(tank.getLayoutX() - 5);
             }
         }
         if(isRightKeyPressed && !isLeftKeyPressed){
-            if(angle < 30){
-                angle += 90;
-            }
-            tank.setRotate(angle);
-            if(tank.getLayoutX() < GAME_WIDTH-46){
-                tank.setLayoutX(tank.getLayoutX() + 3);
+            tank.setRotate(90);
+            if(tank.getLayoutX() < GAME_WIDTH-51){
+                tank.setLayoutX(tank.getLayoutX() + 5);
             }
         }
         if(!isRightKeyPressed && !isLeftKeyPressed){
@@ -395,9 +375,16 @@ public class GameViewManager {
 
     private void addPoints(int pointAmount) {
         points += pointAmount;
-        for (int j = 0; j <= pointAmount ; j++) {
-            pointsLabel.setText("POINTS: " + (points+j));
-        }
+        //for (int j = 0; j <= pointAmount ; j++) {
+            pointsLabel.setText("POINTS: " + (points));
+        //}
+        System.out.println(points);
+    }
+
+    private void increaseLevel(){
+        level++;
+        levelLabel.setText("LEVEL: " + level);
+        System.out.println(level);
     }
 
     private void collisionEffect(String effectImageUrl, double layoutX, double layoutY) {
@@ -447,7 +434,7 @@ public class GameViewManager {
         playerLives = new ArrayList<>();
         for (int i = 0; i < livesLeft; i++) {
             playerLives.add(new ImageView(HEART_IMAGE));
-            playerLives.get(i).setLayoutX((GAME_WIDTH-60) - (i*50));
+            playerLives.get(i).setLayoutX((GAME_WIDTH-105) - (i*50));
             playerLives.get(i).setLayoutY(80);
             gamePane.getChildren().add(playerLives.get(i));
         }
@@ -459,7 +446,7 @@ public class GameViewManager {
 
     private boolean canGoToNextLevel(){
         if(enemies.isEmpty()){
-            level++;
+            increaseLevel();
             gamePane.getChildren().remove(heart);
             return true;
         }
