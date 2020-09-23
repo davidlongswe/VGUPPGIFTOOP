@@ -5,6 +5,7 @@ import Model.PointLabel;
 import Model.entities.enemies.*;
 import Model.entities.players.TANK;
 import Model.entities.projectiles.Bullet;
+import View.animations.ShakeNode;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
@@ -14,7 +15,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -151,7 +151,9 @@ public class GameViewManager {
 
     private void generateNextLevel(int level){
         enemies.clear();
-        addEnemies(enemies, "GREEN", level);
+        if(level > 2){
+            addEnemies(enemies, "GREEN", (level-2));
+        }
         addEnemies(enemies, "BLUE",  level);
         addEnemies(enemies,  "RED", level);
         addEnemies(enemies, "HUGE", level);
@@ -179,14 +181,14 @@ public class GameViewManager {
 
     private void setUpLevelLabel(){
         levelLabel = new LevelLabel("LEVEL: " + level);
-        levelLabel.setLayoutX(20);
+        levelLabel.setLayoutX(GAME_WIDTH - 180);
         levelLabel.setLayoutY(20);
         gamePane.getChildren().add(levelLabel);
     }
 
     private void setUpPointsLabel(){
         pointsLabel = new PointLabel("POINTS: 00");
-        pointsLabel.setLayoutX(GAME_WIDTH - 250);
+        pointsLabel.setLayoutX(20);
         pointsLabel.setLayoutY(20);
         gamePane.getChildren().add(pointsLabel);
     }
@@ -216,21 +218,16 @@ public class GameViewManager {
     private void moveGameElements(){
         heart.setLayoutY(heart.getLayoutY() + 1);
 
+        if(heart.getLayoutY() > GAME_HEIGHT){
+            heart.setLayoutY(0);
+        }
+
         for (Bullet thinBullet : thinBullets) {
             thinBullet.getBulletImage().setLayoutY(thinBullet.getBulletImage().getLayoutY() - 10);
         }
 
         for(Enemy enemy : enemies){
             enemy.move();
-        }
-    }
-
-    private void checkIfElementsAreBehindPlayerAndRelocate(){
-        if(heart.getLayoutY() > GAME_HEIGHT){
-            heart.setLayoutY(0);
-        }
-        for(Enemy enemy : enemies){
-            enemy.resetPosition();
         }
     }
 
@@ -252,7 +249,6 @@ public class GameViewManager {
             public void handle(long now) {
                 moveBackground();
                 moveGameElements();
-                checkIfElementsAreBehindPlayerAndRelocate();
                 checkCollisions();
                 moveTank();
             }
@@ -264,13 +260,13 @@ public class GameViewManager {
         if(isLeftKeyPressed && !isRightKeyPressed){
             tank.setRotate(-90);
             if(tank.getLayoutX() > 5){
-                tank.setLayoutX(tank.getLayoutX() - 5);
+                tank.setLayoutX(tank.getLayoutX() - 3);
             }
         }
         if(isRightKeyPressed && !isLeftKeyPressed){
             tank.setRotate(90);
             if(tank.getLayoutX() < GAME_WIDTH-51){
-                tank.setLayoutX(tank.getLayoutX() + 5);
+                tank.setLayoutX(tank.getLayoutX() + 3);
             }
         }
         if(!isRightKeyPressed && !isLeftKeyPressed){
@@ -333,7 +329,7 @@ public class GameViewManager {
         if(TANK_RADIUS+HEART_RADIUS > calculateDistance(
                 tank.getLayoutX() + TANK_WIDTH, heart.getLayoutX() + HEART_DIAMETER,
                 tank.getLayoutY() + TANK_HEIGHT, heart.getLayoutY()+ HEART_DIAMETER)){
-            if(playerLives.size() <= 3 && playerLives.size() > 0){
+            if(playerLives.size() < 3 && playerLives.size() > 0){
                 livesLeft++;
                 updateLives(livesLeft);
                 setNewElementPosition(heart);
@@ -375,16 +371,12 @@ public class GameViewManager {
 
     private void addPoints(int pointAmount) {
         points += pointAmount;
-        //for (int j = 0; j <= pointAmount ; j++) {
-            pointsLabel.setText("POINTS: " + (points));
-        //}
-        System.out.println(points);
+        pointsLabel.setText("POINTS: " + (points));
     }
 
     private void increaseLevel(){
         level++;
         levelLabel.setText("LEVEL: " + level);
-        System.out.println(level);
     }
 
     private void collisionEffect(String effectImageUrl, double layoutX, double layoutY) {
@@ -392,7 +384,7 @@ public class GameViewManager {
         explosion.setLayoutX(layoutX);
         explosion.setLayoutY(layoutY);
         gamePane.getChildren().add(explosion);
-        PauseTransition pause = new PauseTransition(Duration.seconds(2));
+        PauseTransition pause = new PauseTransition(Duration.seconds(1));
         pause.setOnFinished(e -> gamePane.getChildren().remove(explosion));
         pause.play();    
     }
@@ -405,9 +397,20 @@ public class GameViewManager {
                 removeLife();
                 updateLives(livesLeft);
                 collisionEffect(SMOKE, tank.getLayoutX(), tank.getLayoutY());
-                enemy.setNewStartPosition();
+                enemies.remove(enemy);
+                gamePane.getChildren().remove(enemy.getEnemyTankImage());
+                break;
             }
             if(collisionWithBullets(enemy)){
+                break;
+            }
+            if(enemy.passedSouthernBorder()){
+                ShakeNode shakeNode = new ShakeNode(tank);
+                shakeNode.shake();
+                removeLife();
+                updateLives(livesLeft);
+                enemies.remove(enemy);
+                gamePane.getChildren().remove(enemy.getEnemyTankImage());
                 break;
             }
         }
@@ -425,6 +428,8 @@ public class GameViewManager {
     private void endGame(){
         gameStage.close();
         gameTimer.stop();
+        this.gameStage.hide();
+        this.menuStage.show();
     }
 
     private void updateLives(int livesLeft){
@@ -434,7 +439,7 @@ public class GameViewManager {
         playerLives = new ArrayList<>();
         for (int i = 0; i < livesLeft; i++) {
             playerLives.add(new ImageView(HEART_IMAGE));
-            playerLives.get(i).setLayoutX((GAME_WIDTH-105) - (i*50));
+            playerLives.get(i).setLayoutX(30 + (i*50));
             playerLives.get(i).setLayoutY(80);
             gamePane.getChildren().add(playerLives.get(i));
         }

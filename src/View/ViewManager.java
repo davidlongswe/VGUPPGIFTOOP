@@ -5,8 +5,8 @@ import Model.entities.players.TANK;
 import javafx.scene.Scene;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -21,9 +21,8 @@ public class ViewManager {
     private Stage mainStage;
 
     public static final int MENU_BUTTONS_START_X = 100;
-    public static final int MENU_BUTTONS_START_Y = 150;
+    public static final int MENU_BUTTONS_START_Y = 185;
 
-    private TankFrenzySubscene creditsSubScene;
     private TankFrenzySubscene helpSubscene;
     private TankFrenzySubscene scoreSubscene;
     private TankFrenzySubscene tankPickerSubscene;
@@ -55,11 +54,8 @@ public class ViewManager {
     }
 
     private void createSubScenes(){
-        creditsSubScene = new TankFrenzySubscene();
-        mainPane.getChildren().add(creditsSubScene);
 
-        helpSubscene = new TankFrenzySubscene();
-        mainPane.getChildren().add(helpSubscene);
+        createHelpSubscene();
 
         scoreSubscene = new TankFrenzySubscene();
         mainPane.getChildren().add(scoreSubscene);
@@ -78,6 +74,38 @@ public class ViewManager {
         tankPickerSubscene.getPane().getChildren().add(createStartGameButton());
     }
 
+    private void createHelpSubscene(){
+        helpSubscene = new TankFrenzySubscene();
+        mainPane.getChildren().add(helpSubscene);
+        /*VBox helpElements = new VBox();
+        String fsi = "Forget Space Invaders!";
+        String lptf = "Let's play some Tank Frenzy!";
+        String controls = "Use the arrow keys & space button \\n\\n to maneuver your ship\" +\n" +
+                " and destroy the enemy tanks!";
+        TextLabel textLabel = new TextLabel();
+
+
+        String playerHelp = "Forget Space Invaders, \n\n\n welcome to Tank Frenzy! \n\n\n Use the arrow keys & space button \n\n to maneuver your ship" +
+                " and destroy the enemy tanks!\n\n Hold your own soldier! ";
+        Label helpLabel = new Label();
+        helpLabel.setText(playerHelp);
+        helpLabel.setPadding(new Insets(10,10,10,10));
+        try {
+            helpLabel.setFont(Font.loadFont(new FileInputStream(new File(FONT_PATH)), 18));
+        } catch (FileNotFoundException e) {
+            helpLabel.setFont(Font.font("Verdana", 18));
+        }
+        helpLabel.setAlignment(Pos.CENTER);
+        helpLabel.setLayoutX(10);
+        helpLabel.setLayoutY(10);
+        helpSubscene.getPane().getChildren().add(helpLabel);*/
+    }
+
+    private void createScoresSubscene(){
+
+    }
+
+
     private HBox createTanksToChoose(){
         HBox box = new HBox();
         box.setSpacing(60);
@@ -95,7 +123,7 @@ public class ViewManager {
             });
 
         }
-        box.setLayoutX(300 - (118*2));
+        box.setLayoutX(410 - (118*2));
         box.setLayoutY(100);
         return box;
     }
@@ -117,7 +145,6 @@ public class ViewManager {
         return mainStage;
     }
 
-
     private void addMenuButton(TankFrenzyButton tankFrenzyButton){
         tankFrenzyButton.setLayoutX(MENU_BUTTONS_START_X);
         tankFrenzyButton.setLayoutY(MENU_BUTTONS_START_Y + menuButtons.size() * 100);
@@ -129,7 +156,6 @@ public class ViewManager {
         createStartButton();
         createScoresButton();
         createHelpButton();
-        createCreditsButton();
         createExitButton();
     }
 
@@ -151,12 +177,6 @@ public class ViewManager {
         helpButton.setOnAction(event -> showSubScene(helpSubscene));
     }
 
-    private void createCreditsButton(){
-        TankFrenzyButton creditsButton = new TankFrenzyButton("CREDITS");
-        addMenuButton(creditsButton);
-        creditsButton.setOnAction(event -> showSubScene(creditsSubScene));
-    }
-
     private void createExitButton(){
         TankFrenzyButton exitButton = new TankFrenzyButton("EXIT");
         addMenuButton(exitButton);
@@ -175,14 +195,13 @@ public class ViewManager {
     }
 
     private void createLogo(){
-        ImageView logo = new ImageView("View/resources/tank_logo.png");
-        logo.setFitHeight(100);
-        logo.setFitWidth(300);
-        logo.setLayoutX(400);
-        logo.setLayoutY(50);
-        logo.setOnMouseEntered(event -> logo.setEffect(new DropShadow()));
-        logo.setOnMouseExited(event -> logo.setEffect(null));
-        mainPane.getChildren().add(logo);
+        TextLabel textLabel = new TextLabel("Tank Frenzy", 60);
+        textLabel.setTextFill(Color.WHITE);
+        textLabel.setLayoutX(380);
+        textLabel.setLayoutY(50);
+        textLabel.setOnMouseEntered(event -> textLabel.setEffect(new DropShadow()));
+        textLabel.setOnMouseExited(event -> textLabel.setEffect(null));
+        mainPane.getChildren().add(textLabel);
     }
 
 }

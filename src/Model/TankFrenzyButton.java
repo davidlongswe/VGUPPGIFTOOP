@@ -56,16 +56,8 @@ public class TankFrenzyButton extends Button {
                 setButtonReleasedStyle();
             }
         });
-        setOnMouseEntered(event -> {
-            if(event.getButton().equals(MouseButton.PRIMARY)){
-                setEffect(new DropShadow());
-            }
-        });
-        setOnMouseExited(event -> {
-            if(event.getButton().equals(MouseButton.PRIMARY)){
-                setEffect(null);
-            }
-        });
+        setOnMouseEntered(event -> setEffect(new DropShadow()));
+        setOnMouseExited(event -> setEffect(null));
     }
 
 

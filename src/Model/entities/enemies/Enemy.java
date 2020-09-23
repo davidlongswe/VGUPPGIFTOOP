@@ -30,9 +30,11 @@ public class Enemy {
         enemyTankImage.setLayoutY(-(randomNumberGenerator.nextInt(GAME_HEIGHT-46)));
     }
 
-    public void resetPosition(){
+    public boolean passedSouthernBorder(){
         if(enemyTankImage.getLayoutY() > GAME_HEIGHT){
-            enemyTankImage.setLayoutY(0);
+            return true;
+        }else{
+            return false;
         }
     }
 
@@ -44,13 +46,16 @@ public class Enemy {
         return enemyTankImage;
     }
 
-    public void shoot(){
+    public void spawnBullet(){
         PauseTransition pause = new PauseTransition(Duration.seconds(2));
         pause.setOnFinished(e -> {
             enemyTankBulletImage.setLayoutX(enemyTankImage.getLayoutX() + 21);
             enemyTankBulletImage.setLayoutY(enemyTankImage.getLayoutY());
         });
         pause.play();
+    }
+
+    public void shoot(){
         enemyTankBulletImage.setLayoutY(enemyTankBulletImage.getLayoutY() + 5);
     }
 

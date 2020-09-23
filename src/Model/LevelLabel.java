@@ -14,7 +14,7 @@ public class LevelLabel extends Label {
     private final static String FONT_PATH = "src/Model/resources/kenvector_future.ttf";
 
     public LevelLabel(String text){
-        setPrefWidth(250);
+        setPrefWidth(170);
         setPrefHeight(50);
         setPadding(new Insets(10,10,10,10));
         setLabelFont();

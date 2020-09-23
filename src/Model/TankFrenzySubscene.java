@@ -8,7 +8,7 @@ import javafx.util.Duration;
 
 public class TankFrenzySubscene extends SubScene {
 
-    public static final String FONT_PATH = "src/Model/resources/kenvector_future.ttf";
+    //public static final String FONT_PATH = "src/Model/resources/kenvector_future.ttf";
     public static final String BACKGROUND_IMAGE = "model/resources/blue_panel.png";
 
     private boolean isHidden;
@@ -27,9 +27,7 @@ public class TankFrenzySubscene extends SubScene {
         isHidden = true;
         setLayoutX(1024);
         setLayoutY(180);
-
     }
-
 
     public void moveSubScene(){
         TranslateTransition transition = new TranslateTransition();

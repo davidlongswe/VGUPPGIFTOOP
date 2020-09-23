@@ -8,6 +8,6 @@ public class BigRedEnemy extends Enemy {
     private static final String ENEMY_BIG_RED_BULLET = "View/resources/bulletRed3.png";
 
     public BigRedEnemy() {
-        super(new ImageView(ENEMY_BIG_RED), new ImageView(ENEMY_BIG_RED_BULLET), 0.75);
+        super(new ImageView(ENEMY_BIG_RED), new ImageView(ENEMY_BIG_RED_BULLET), 0.5);
     }
 }
