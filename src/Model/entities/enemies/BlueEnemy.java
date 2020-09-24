@@ -8,6 +8,6 @@ public class BlueEnemy extends Enemy {
     public static final String ENEMY_TANK_BLUE_BULLET = "View/resources/bulletBlue3.png";
 
     public BlueEnemy() {
-        super(new ImageView(ENEMY_TANK_BLUE),  new ImageView(ENEMY_TANK_BLUE_BULLET),0.75);
+        super(new ImageView(ENEMY_TANK_BLUE),  new ImageView(ENEMY_TANK_BLUE_BULLET),1, 1);
     }
 }

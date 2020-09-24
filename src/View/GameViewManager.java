@@ -1,11 +1,13 @@
 package View;
 
-import Model.LevelLabel;
-import Model.PointLabel;
+import Model.SoundPlayer;
+import Model.labels.LevelLabel;
+import Model.labels.PointLabel;
+import Model.subscenes.SubmitScoreSubscene;
 import Model.entities.enemies.*;
 import Model.entities.players.TANK;
 import Model.entities.projectiles.Bullet;
-import View.animations.ShakeNode;
+import View.animations.Shake;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
@@ -24,9 +26,10 @@ public class GameViewManager {
     private Stage gameStage;
     private Scene gameScene;
     private Stage menuStage;
+    private SubmitScoreSubscene submitScoreSubscene;
 
-    public static final int GAME_WIDTH = 1024;
-    public static final int GAME_HEIGHT = 768;
+    public static final int GAME_WIDTH = 768;
+    public static final int GAME_HEIGHT = 1024;
     public static final int TANK_RADIUS = 21;
     public static final int HEART_RADIUS = 16;
     public static final int TANK_HEIGHT = 46;
@@ -35,9 +38,7 @@ public class GameViewManager {
 
     boolean shooting,
             isLeftKeyPressed,
-            isRightKeyPressed,
-            isUpKeyPressed,
-            isDownKeyPressed;
+            isRightKeyPressed;
 
     private int angle;
     private int level;
@@ -46,9 +47,11 @@ public class GameViewManager {
     private GridPane gridPane1;
     private GridPane gridPane2;
 
-    public static final String BACKGROUND_IMAGE = "View/resources/bg.png";
+    public static final String BACKGROUND_IMAGE = "View/resources/blue_squared.png";
     public static final String HEART_IMAGE = "View/resources/heart.png";
-    public static final String EXPLOSION = "View/resources/explosionSmoke2.png";
+    public static final String SPARK = "View/resources/spark.png";
+    public static final String SMALL_EXPLOSION = "View/resources/smallerExplosion.png";
+    public static final String BIG_EXPLOSION = "View/resources/bigExplosion.png";
     public static final String BULLET_THIN = "View/resources/shotThin.png";
     public static final String SMOKE = "View/resources/explosionSmoke4.png";
 
@@ -67,9 +70,13 @@ public class GameViewManager {
     private int livesLeft;
     private int points;
 
+    SoundPlayer soundPlayer;
+
     public GameViewManager(){
         initializeStage();
         createKeyListeners();
+        soundPlayer = new SoundPlayer();
+        soundPlayer.play("EPIC_INTRO");
         randomNumberGenerator = new Random();
     }
 
@@ -82,14 +89,9 @@ public class GameViewManager {
             if(keyCode == KeyCode.RIGHT){
                 isRightKeyPressed = true;
             }
-            if(keyCode == KeyCode.UP){
-                isUpKeyPressed = true;
-            }
-            if(keyCode == KeyCode.DOWN){
-                isDownKeyPressed = true;
-            }
             if(keyCode == KeyCode.SPACE){
-                if(!shooting){
+                if(!shooting) {
+                    soundPlayer.play("SHOOT");
                     addBullet();
                     shooting = true;
                 }
@@ -102,13 +104,7 @@ public class GameViewManager {
             if(event.getCode() == KeyCode.RIGHT){
                 isRightKeyPressed = false;
             }
-            if(event.getCode() == KeyCode.UP){
-                isUpKeyPressed = false;
-            }
-            if(event.getCode() == KeyCode.DOWN){
-                isDownKeyPressed = false;
-            }
-            if(event.getCode() == KeyCode.SPACE){
+            if(event.getCode() == KeyCode.SPACE) {
                 shooting = false;
             }
         });
@@ -126,7 +122,10 @@ public class GameViewManager {
         gamePane = new AnchorPane();
         gameScene = new Scene(gamePane, GAME_WIDTH, GAME_HEIGHT);
         gameStage = new Stage();
+        gameStage.setTitle("TANK FRENZY");
         gameStage.setScene(gameScene);
+        submitScoreSubscene = new SubmitScoreSubscene();
+        gamePane.getChildren().add(submitScoreSubscene);
     }
 
     public void createNewGame(Stage menuStage, TANK chosenTank){
@@ -181,7 +180,7 @@ public class GameViewManager {
 
     private void setUpLevelLabel(){
         levelLabel = new LevelLabel("LEVEL: " + level);
-        levelLabel.setLayoutX(GAME_WIDTH - 180);
+        levelLabel.setLayoutX(GAME_WIDTH - 190);
         levelLabel.setLayoutY(20);
         gamePane.getChildren().add(levelLabel);
     }
@@ -250,6 +249,9 @@ public class GameViewManager {
                 moveBackground();
                 moveGameElements();
                 checkCollisions();
+                if(canGoToNextLevel()){
+                    createGameElements();
+                }
                 moveTank();
             }
         };
@@ -330,6 +332,11 @@ public class GameViewManager {
                 tank.getLayoutX() + TANK_WIDTH, heart.getLayoutX() + HEART_DIAMETER,
                 tank.getLayoutY() + TANK_HEIGHT, heart.getLayoutY()+ HEART_DIAMETER)){
             if(playerLives.size() < 3 && playerLives.size() > 0){
+                if(livesLeft == 1){
+                    soundPlayer.unmuteSounds();
+                    soundPlayer.stopMusic();
+                    soundPlayer.play("MAIN_MUSIC");
+                }
                 livesLeft++;
                 updateLives(livesLeft);
                 setNewElementPosition(heart);
@@ -339,22 +346,36 @@ public class GameViewManager {
 
     private boolean collisionWithBullets(Enemy enemyTank) {
         for(Bullet bullet : thinBullets) {
-            if (TANK_RADIUS+4 > calculateDistance(
+            if (TANK_RADIUS + 4 > calculateDistance(
                     enemyTank.getEnemyTankImage().getLayoutX() + TANK_WIDTH, bullet.getBulletImage().getLayoutX() + 8,
                     enemyTank.getEnemyTankImage().getLayoutY() + TANK_HEIGHT, bullet.getBulletImage().getLayoutY() + 26)) {
-                collisionEffect(EXPLOSION, enemyTank.getEnemyTankImage().getLayoutX(), enemyTank.getEnemyTankImage().getLayoutY());
-                gamePane.getChildren().remove(bullet.getBulletImage());
-                gamePane.getChildren().remove(enemyTank.getEnemyTankImage());
-                enemies.remove(enemyTank);
-                if(canGoToNextLevel()){
-                    createGameElements();
-                }
+                enemyTank.removeLife();
+                soundPlayer.play("TANK_HIT");
+                tankCollisionAnimation(enemyTank);
                 thinBullets.remove(bullet);
-                increasePoints(enemyTank);
+                gamePane.getChildren().remove(bullet.getBulletImage());
+                if (enemyTank.getLives() == 0) {
+                    gamePane.getChildren().remove(enemyTank.getEnemyTankImage());
+                    soundPlayer.play("EXPLOSION");
+                    enemies.remove(enemyTank);
+                    increasePoints(enemyTank);
+                }
                 return true;
             }
         }
         return false;
+    }
+
+    private void tankCollisionAnimation(Enemy enemyTank) {
+        if(enemyTank instanceof BigRedEnemy || enemyTank instanceof HugeEnemy){
+            if(enemyTank.getLives() > 0){
+                collisionEffect(SPARK, enemyTank.getEnemyTankImage().getLayoutX(), enemyTank.getEnemyTankImage().getLayoutY());
+            }else{
+                collisionEffect(BIG_EXPLOSION, enemyTank.getEnemyTankImage().getLayoutX(), enemyTank.getEnemyTankImage().getLayoutY());
+            }
+        }else{
+                collisionEffect(SMALL_EXPLOSION, enemyTank.getEnemyTankImage().getLayoutX(), enemyTank.getEnemyTankImage().getLayoutY());
+        }
     }
 
     private void increasePoints(Enemy enemyTank) {
@@ -376,6 +397,10 @@ public class GameViewManager {
 
     private void increaseLevel(){
         level++;
+        if(level == 3){
+            soundPlayer.stopMusic();
+            soundPlayer.play("MAIN_MUSIC");
+        }
         levelLabel.setText("LEVEL: " + level);
     }
 
@@ -396,6 +421,7 @@ public class GameViewManager {
                     tank.getLayoutY() + TANK_HEIGHT, enemy.getEnemyTankImage().getLayoutY() + TANK_HEIGHT)){
                 removeLife();
                 updateLives(livesLeft);
+                soundPlayer.play("TANK_HIT");
                 collisionEffect(SMOKE, tank.getLayoutX(), tank.getLayoutY());
                 enemies.remove(enemy);
                 gamePane.getChildren().remove(enemy.getEnemyTankImage());
@@ -405,8 +431,8 @@ public class GameViewManager {
                 break;
             }
             if(enemy.passedSouthernBorder()){
-                ShakeNode shakeNode = new ShakeNode(tank);
-                shakeNode.shake();
+                Shake shaker = new Shake(gameStage);
+                shaker.shake();
                 removeLife();
                 updateLives(livesLeft);
                 enemies.remove(enemy);
@@ -420,16 +446,24 @@ public class GameViewManager {
         int indexToRemove = livesLeft - 1;
         gamePane.getChildren().remove(playerLives.get(indexToRemove));
         livesLeft--;
+        if(livesLeft == 1){
+            soundPlayer.stopMusic();
+            soundPlayer.muteSounds();
+            soundPlayer.play("HEART_SUSPENSE");
+        }
         if(livesLeft == 0){
+            soundPlayer.stopMusic();
+            soundPlayer.play("DEATH");
             endGame();
         }
     }
 
     private void endGame(){
-        gameStage.close();
         gameTimer.stop();
-        this.gameStage.hide();
-        this.menuStage.show();
+        submitScoreSubscene.moveSubScene();
+        //gameStage.close();
+        //this.gameStage.hide();
+        //this.menuStage.show();
     }
 
     private void updateLives(int livesLeft){

@@ -8,16 +8,18 @@ import java.util.Random;
 
 public class Enemy {
 
-    public static final int GAME_HEIGHT = 768;
-    public static final int GAME_WIDTH = 1024;
+    public static final int GAME_HEIGHT = 1024;
+    public static final int GAME_WIDTH = 768;
     private ImageView enemyTankBulletImage;
     private ImageView enemyTankImage;
     private double speed;
+    private int lives;
 
-    public Enemy(ImageView enemyTankImage, ImageView enemyTankBulletImage, double speed) {
+    public Enemy(ImageView enemyTankImage, ImageView enemyTankBulletImage, double speed, int lives) {
         this.enemyTankImage = enemyTankImage;
         this.enemyTankBulletImage = enemyTankBulletImage;
         this.speed = speed;
+        this.lives = lives;
     }
 
     public void move(){
@@ -59,4 +61,11 @@ public class Enemy {
         enemyTankBulletImage.setLayoutY(enemyTankBulletImage.getLayoutY() + 5);
     }
 
+    public void removeLife(){
+        this.lives--;
+    }
+
+    public int getLives() {
+        return lives;
+    }
 }

@@ -2,6 +2,8 @@ package View;
 
 import Model.*;
 import Model.entities.players.TANK;
+import Model.labels.TextLabel;
+import Model.subscenes.TankFrenzySubscene;
 import javafx.scene.Scene;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -14,7 +16,7 @@ import java.util.List;
 
 public class ViewManager {
 
-    public static final int WIDTH = 1024;
+    public static final int WIDTH = 1024 ;
     public static final int HEIGHT = 768;
     private AnchorPane mainPane;
     private Scene mainScene;
@@ -22,6 +24,7 @@ public class ViewManager {
 
     public static final int MENU_BUTTONS_START_X = 100;
     public static final int MENU_BUTTONS_START_Y = 185;
+    public static final String BACKGROUND_IMAGE = "View/resources/blue_squared_flipped.png";
 
     private TankFrenzySubscene helpSubscene;
     private TankFrenzySubscene scoreSubscene;
@@ -41,8 +44,9 @@ public class ViewManager {
         mainStage.setScene(mainScene);
         createSubScenes();
         createButtons();
-        createBackground();
+        setBackgroundStyle();
         createLogo();
+        showSubScene(tankPickerSubscene);
     }
 
     private void showSubScene(TankFrenzySubscene subScene){
@@ -104,7 +108,6 @@ public class ViewManager {
     private void createScoresSubscene(){
 
     }
-
 
     private HBox createTanksToChoose(){
         HBox box = new HBox();
@@ -183,15 +186,12 @@ public class ViewManager {
         exitButton.setOnAction(event -> mainStage.close());
     }
 
-    private void createBackground(){
-        Image backgroundImage = new Image("View/resources/bg.png", WIDTH,HEIGHT,false,true);
-        BackgroundImage background = new BackgroundImage(
-                backgroundImage,
-                BackgroundRepeat.REPEAT,
-                BackgroundRepeat.REPEAT,
-                BackgroundPosition.DEFAULT,
-                null);
-        mainPane.setBackground(new Background(background));
+    private void setBackgroundStyle(){
+        BackgroundImage backgroundImage =
+                new BackgroundImage(new Image(BACKGROUND_IMAGE, WIDTH, HEIGHT,
+                        false, true), BackgroundRepeat.NO_REPEAT,
+                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, null);
+        mainPane.setBackground(new Background(backgroundImage));
     }
 
     private void createLogo(){

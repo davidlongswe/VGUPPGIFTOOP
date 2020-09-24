@@ -8,7 +8,7 @@ public class GreenEnemy extends Enemy {
     public static final String ENEMY_GREEN_BULLET = "View/resources/bulletGreen3.png";
 
     public GreenEnemy() {
-        super(new ImageView(ENEMY_GREEN), new ImageView(ENEMY_GREEN_BULLET), 1);
+        super(new ImageView(ENEMY_GREEN), new ImageView(ENEMY_GREEN_BULLET), 1.5, 1);
     }
 
 }
