@@ -2,22 +2,29 @@ package Model.subscenes;
 
 import javafx.animation.TranslateTransition;
 import javafx.scene.SubScene;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.*;
 import javafx.util.Duration;
 
 public class SubmitScoreSubscene extends SubScene {
 
     private boolean isHidden;
+    int playerScore;
+    String playerName;
+    public static final String BACKGROUND_IMAGE = "model/resources/blue_panel.png";
 
     public SubmitScoreSubscene() {
-        super(new AnchorPane(), 300, 200);
-        prefWidth(300);
-        prefHeight(200);
-        AnchorPane root = (AnchorPane) this.getRoot();
-        root.setStyle("-fx-background-color: #124ba1;");
+        super(new AnchorPane(), 600, 400);
+        prefWidth(600);
+        prefHeight(400);
+        BackgroundImage subSceneBg = new BackgroundImage(new Image(BACKGROUND_IMAGE, 600, 400, false, true),
+                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, null);
+
+        AnchorPane root2 = (AnchorPane) this.getRoot();
+        root2.setBackground(new Background(subSceneBg));
         isHidden = true;
-        setLayoutX(200);
-        setLayoutY(200);
+        setLayoutX(84);
+        setLayoutY(1024);
     }
 
     public void moveSubScene(){
@@ -25,7 +32,7 @@ public class SubmitScoreSubscene extends SubScene {
         transition.setDuration(Duration.seconds(0.5));
         transition.setNode(this);
         if(isHidden){
-            transition.setToY(-512);
+            transition.setToY(-712);
             isHidden = false;
         }else{
             transition.setToY(1024);
