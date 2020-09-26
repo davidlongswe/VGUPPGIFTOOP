@@ -91,7 +91,7 @@ public class GameViewManager {
             }
             if(keyCode == KeyCode.SPACE){
                 if(!shooting) {
-                    soundPlayer.play("SHOOT");
+                    //soundPlayer.play("SHOOT");
                     addBullet();
                     shooting = true;
                 }
@@ -125,7 +125,6 @@ public class GameViewManager {
         gameStage.setTitle("TANK FRENZY");
         gameStage.setScene(gameScene);
         submitScoreSubscene = new SubmitScoreSubscene();
-        gamePane.getChildren().add(submitScoreSubscene);
     }
 
     public void createNewGame(Stage menuStage, TANK chosenTank){
@@ -141,6 +140,7 @@ public class GameViewManager {
         createGameElements();
         createGameLoop();
         gameStage.show();
+        endGame();
     }
 
     private void createGameElements(){
@@ -460,6 +460,7 @@ public class GameViewManager {
 
     private void endGame(){
         gameTimer.stop();
+        gamePane.getChildren().add(submitScoreSubscene);
         submitScoreSubscene.moveSubScene();
         //gameStage.close();
         //this.gameStage.hide();
