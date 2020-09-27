@@ -1,12 +1,8 @@
 package Model;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 public class ScoreKeeper {
 
@@ -14,7 +10,9 @@ public class ScoreKeeper {
     public static final String SCORE_FILE_NAME = "scores.txt";
 
     public ScoreKeeper() {
-       scores = new ArrayList<>();
+        scores = new ArrayList<>();
+        createScoreFile();
+        getScoresFromFile();
     }
 
     private void createScoreFile(){
@@ -22,8 +20,6 @@ public class ScoreKeeper {
         try {
             if(file.createNewFile()){
                 System.out.println("Score file created");
-            }else{
-                System.out.println("Score file already exists!");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -31,7 +27,7 @@ public class ScoreKeeper {
     }
 
     private void scoresToFile(){
-        PrintWriter pw = null;
+        PrintWriter pw;
         try {
             pw = new PrintWriter(new FileOutputStream(SCORE_FILE_NAME));
             for (Score score : scores)
@@ -52,6 +48,7 @@ public class ScoreKeeper {
                 Score score = new Score(splitLine[0], Integer.parseInt(splitLine[1]));
                 scores.add(score);
             }
+            bufferedReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -61,15 +58,13 @@ public class ScoreKeeper {
         Collections.sort(scores);
     }
 
-    private void addScore(Score score){
+    public void addScore(Score score){
         scores.add(score);
+        sortScoresFromHighestToLowest();
+        scoresToFile();
     }
 
     public ArrayList<Score> getScores() {
         return scores;
-    }
-
-    public void setScores(ArrayList<Score> scores) {
-        this.scores = scores;
     }
 }

@@ -1,8 +1,11 @@
 package View;
 
+import Model.Score;
 import Model.SoundPlayer;
+import Model.TankFrenzyButton;
 import Model.labels.LevelLabel;
 import Model.labels.PointLabel;
+import Model.labels.TextLabel;
 import Model.subscenes.SubmitScoreSubscene;
 import Model.entities.enemies.*;
 import Model.entities.players.TANK;
@@ -10,14 +13,18 @@ import Model.entities.projectiles.Bullet;
 import View.animations.Shake;
 import javafx.animation.AnimationTimer;
 import javafx.animation.PauseTransition;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.Random;
 
 public class GameViewManager {
@@ -71,6 +78,7 @@ public class GameViewManager {
     private int points;
 
     SoundPlayer soundPlayer;
+    ViewManager viewManager;
 
     public GameViewManager(){
         initializeStage();
@@ -78,6 +86,7 @@ public class GameViewManager {
         soundPlayer = new SoundPlayer();
         soundPlayer.play("EPIC_INTRO");
         randomNumberGenerator = new Random();
+        viewManager = new ViewManager();
     }
 
     private void createKeyListeners(){
@@ -91,10 +100,13 @@ public class GameViewManager {
             }
             if(keyCode == KeyCode.SPACE){
                 if(!shooting) {
-                    //soundPlayer.play("SHOOT");
+                    soundPlayer.play("SHOOT");
                     addBullet();
                     shooting = true;
                 }
+            }
+            if(keyCode == KeyCode.ESCAPE){
+                endGame();
             }
         });
         gameScene.setOnKeyReleased(event -> {
@@ -140,7 +152,7 @@ public class GameViewManager {
         createGameElements();
         createGameLoop();
         gameStage.show();
-        endGame();
+        //endGame();
     }
 
     private void createGameElements(){
@@ -460,11 +472,27 @@ public class GameViewManager {
 
     private void endGame(){
         gameTimer.stop();
+        soundPlayer.stopMusic();
+        showSubmitScoreSubScene();
+    }
+
+    private void showSubmitScoreSubScene() {
+        VBox vBox = new VBox();
+        TextLabel textLabel = new TextLabel("You scored " + points + " points! \n Enter your name: ", 20);
+        TextField textField = new TextField();
+        TankFrenzyButton submitButton = new TankFrenzyButton("SUBMIT");
+        vBox.getChildren().addAll(textLabel, textField, submitButton);
+        vBox.setAlignment(Pos.CENTER);
+        submitScoreSubscene.getPane().getChildren().add(vBox);
+        submitButton.setOnMouseClicked(mouseEvent -> {
+            gameStage.close();
+            this.gameStage.hide();
+            this.menuStage.show();
+            Score score = new Score(textField.getText(), points);
+            viewManager.addScore(score);
+        });
         gamePane.getChildren().add(submitScoreSubscene);
         submitScoreSubscene.moveSubScene();
-        //gameStage.close();
-        //this.gameStage.hide();
-        //this.menuStage.show();
     }
 
     private void updateLives(int livesLeft){

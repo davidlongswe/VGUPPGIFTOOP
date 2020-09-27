@@ -2,15 +2,20 @@ package View;
 
 import Model.*;
 import Model.entities.players.TANK;
+import Model.labels.InfoLabel;
 import Model.labels.TextLabel;
 import Model.subscenes.TankFrenzySubscene;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.ListView;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,9 +37,14 @@ public class ViewManager {
 
     private TankFrenzySubscene sceneToHide;
 
-    List<TankFrenzyButton> menuButtons;
-    List<TankPicker> tankList;
+    private List<TankFrenzyButton> menuButtons;
+    private List<TankPicker> tankList;
+
+    private ScoreKeeper scoreKeeper;
+
     private TANK chosenTank;
+
+    private ListView<String> scoreList;
 
     public ViewManager(){
         menuButtons = new ArrayList<>();
@@ -42,6 +52,7 @@ public class ViewManager {
         mainScene = new Scene(mainPane, WIDTH, HEIGHT);
         mainStage = new Stage();
         mainStage.setScene(mainScene);
+        scoreKeeper = new ScoreKeeper();
         createSubScenes();
         createButtons();
         setBackgroundStyle();
@@ -58,12 +69,8 @@ public class ViewManager {
     }
 
     private void createSubScenes(){
-
         createHelpSubscene();
-
-        scoreSubscene = new TankFrenzySubscene();
-        mainPane.getChildren().add(scoreSubscene);
-
+        createScoresSubscene();
         createTankPickerSubscene();
     }
 
@@ -106,7 +113,18 @@ public class ViewManager {
     }
 
     private void createScoresSubscene(){
-
+        scoreSubscene = new TankFrenzySubscene();
+        mainPane.getChildren().add(scoreSubscene);
+        InfoLabel highScores = new InfoLabel("HIGHSCORES");
+        highScores.setLayoutX(110);
+        highScores.setLayoutY(25);
+        scoreList = new ListView<>();
+        scoreList.setPrefWidth(380);
+        scoreList.setPrefHeight(200);
+        scoreList.setLayoutX(110);
+        scoreList.setLayoutY(80);
+        scoreSubscene.getPane().getChildren().add(highScores);
+        scoreSubscene.getPane().getChildren().add(scoreList);
     }
 
     private HBox createTanksToChoose(){
@@ -171,7 +189,10 @@ public class ViewManager {
     private void createScoresButton(){
         TankFrenzyButton scoresButton = new TankFrenzyButton("SCORES");
         addMenuButton(scoresButton);
-        scoresButton.setOnAction(event -> showSubScene(scoreSubscene));
+        scoresButton.setOnAction(event -> {
+            showSubScene(scoreSubscene);
+            updateScoreList();
+        });
     }
 
     private void createHelpButton(){
@@ -204,4 +225,19 @@ public class ViewManager {
         mainPane.getChildren().add(textLabel);
     }
 
+    private void updateScoreList(){
+        scoreSubscene.getPane().getChildren().remove(scoreList);
+        ArrayList<String> scores = new ArrayList<>();
+        for(Score score : scoreKeeper.getScores()){
+            scores.add(score.getName() + " " +  score.getScore());
+            System.out.println(score.getName());
+        }
+        ObservableList<String> scoreItems = FXCollections.observableArrayList(scores);
+        scoreList.setItems(scoreItems);
+        scoreSubscene.getPane().getChildren().add(scoreList);
+    }
+
+    public void addScore(Score score) {
+        scoreKeeper.addScore(score);
+    }
 }

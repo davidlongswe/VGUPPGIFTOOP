@@ -1,4 +1,4 @@
-package Model;
+package Model.labels;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
